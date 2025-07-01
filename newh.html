@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CCE Marks Entry</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, sans-serif;
+      margin: 0; padding: 0;
+      background: #f0f9ff;
+      display: flex; flex-direction: column; min-height: 100vh;
+    }
+    header {
+      background: linear-gradient(135deg, #00c3ff, #ffff1c);
+      color: #333; text-align: center;
+      padding: 30px 20px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    }
+    header h1 { margin: 5px 0; font-size: 2rem; }
+    .container { flex: 1; padding: 20px; max-width: 1200px; margin: auto; }
+    .selector-btn {
+      background: #1abc9c; color: #fff; border: none;
+      padding: 14px 24px; border-radius: 6px;
+      font-size: 18px; display: block; margin: 20px auto;
+      cursor: pointer; transition: background 0.3s;
+    }
+    .selector-btn:hover { background: #16a085; }
+    p { text-align: center; font-weight: bold; margin: 8px 0; }
+    .add-student { display: flex; gap: 15px; justify-content: center; margin: 20px 0; }
+    .add-student button {
+      padding: 14px 20px; border: none; border-radius: 5px; cursor: pointer;
+      color: #fff; font-size: 16px; transition: transform 0.2s;
+    }
+    .add-student button:hover { transform: scale(1.05); }
+    .export-excel-btn { background: #2ecc71; }
+    .clear-data-btn { background: #e74c3c; }
+    table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 5px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); overflow: hidden; }
+    th, td { border: 1px solid #ddd; padding: 12px; text-align: center; }
+    th { background: #3498db; color: #fff; }
+    input { width: 100%; padding: 8px; box-sizing: border-box; }
+    button.save-btn {
+      background: #2980b9; color: #fff; border: none; border-radius: 4px;
+      padding: 8px 12px; cursor: pointer; width: 100%;
+    }
+    .edit-btn { background: #f39c12; color: #fff; border: none; padding: 5px 10px; margin: 2px; border-radius: 3px; cursor: pointer; }
+    .delete-btn { background: #e74c3c; color: #fff; border: none; padding: 5px 10px; margin: 2px; border-radius: 3px; cursor: pointer; }
+    .modal {
+      display: none; position: fixed; z-index: 1000;
+      left: 0; top: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.6); justify-content: center; align-items: center;
+    }
+    .modal-content {
+      background: #fff; padding: 25px;
+      border-radius: 8px; width: 90%; max-width: 400px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.3);
+    }
+    footer {
+      background: #16a085; overflow: hidden; white-space: nowrap;
+    }
+    footer marquee { color: #fff; font-size: 16px; padding: 10px 0; display: block; }
+    @media (max-width: 768px) {
+      header h1 { font-size: 1.5rem; }
+      table { font-size: 14px; }
+      .add-student { flex-direction: column; gap: 10px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Govt. College Rau Indore</h1>
+    <h2>Department of Botany</h2>
+    <h3>CCE Marks Entry</h3>
+  </header>
+
+  <button class="selector-btn" onclick="openModal()">Select Class, Subject & Faculty</button>
+  <p id="currentCombo"></p>
+  <p id="facultyName"></p>
+
+  <div class="container">
+    <div class="add-student">
+      <button class="export-excel-btn" onclick="exportToExcel()">Export to Excel</button>
+      <button class="clear-data-btn" onclick="clearData()">Clear Data</button>
+    </div>
+
+    <table>
+      <thead id="tableHead"></thead>
+      <tbody>
+        <tr id="inputRow"></tr>
+      </tbody>
+      <tbody id="tableBody"></tbody>
+    </table>
+  </div>
+
+  <footer>
+    <marquee behavior="scroll" direction="left">Created by Sandesh Rai</marquee>
+  </footer>
+
+  <div id="selectorModal" class="modal">
+    <div class="modal-content">
+      <h3>Select Class, Subject & Faculty</h3>
+      <label>Class</label>
+      <select id="classSelect">
+        <option>M.Sc I Semester</option>
+        <option>M.Sc III Semester</option>
+        <option>M.Sc 1st Year</option>
+      </select>
+      <label>Subject</label>
+      <select id="subjectSelect">
+        <option>Paper 1</option>
+        <option>Paper 2</option>
+        <option>Paper 3</option>
+        <option>Paper 4</option>
+        <option>Lab Course 1</option>
+        <option>Lab Course 2</option>
+      </select>
+      <label>Faculty</label>
+      <select id="facultySelect">
+        <option>Dr. Shweta Hardia</option>
+        <option>Dr. Shweta Tiwari</option>
+        <option>Dr. Ankita Sharma</option>
+        <option>Prof. Tufan Benal</option>
+        <option>Prof. Sandesh Rai</option>
+      </select>
+      <button onclick="saveCombo()">Start</button>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script>
+    let students = [];
+    let comboKey = '';
+    let currentFaculty = '';
+    let isLabCourse = false;
+
+    function openModal() {
+      document.getElementById('selectorModal').style.display = 'flex';
+    }
+
+    function closeModal() {
+      document.getElementById('selectorModal').style.display = 'none';
+    }
+
+    function saveCombo() {
+      const cls = document.getElementById('classSelect').value;
+      const subj = document.getElementById('subjectSelect').value;
+      const faculty = document.getElementById('facultySelect').value;
+
+      comboKey = `students_${cls}_${subj}_${faculty}`;
+      students = JSON.parse(localStorage.getItem(comboKey) || '[]');
+
+      isLabCourse = subj.includes('Lab Course');
+      currentFaculty = faculty || '-';
+
+      document.getElementById('facultyName').innerText = `Faculty Name: ${currentFaculty}`;
+      document.getElementById('currentCombo').innerText = `Class: ${cls} | Subject: ${subj} | Faculty: ${faculty}`;
+
+      localStorage.setItem('currentClass', cls);
+      localStorage.setItem('currentSubject', subj);
+      localStorage.setItem('currentFaculty', faculty);
+
+      closeModal();
+      renderInputRow();
+      renderTable();
+    }
+
+    function autoFillSno() {
+      document.getElementById('sno').value = students.length ? Math.max(...students.map(s => s.sno)) + 1 : 1;
+    }
+
+    function renderInputRow() {
+      let head = document.getElementById('tableHead');
+      let inputRow = document.getElementById('inputRow');
+
+      if (isLabCourse) {
+        head.innerHTML = `<tr><th>S.No</th><th>Student Name</th><th>Internal Marks (30)</th><th>Actions</th></tr>`;
+        inputRow.innerHTML = `
+          <td><input id="sno" type="number" readonly/></td>
+          <td><input id="studentName"/></td>
+          <td><input id="internalMarks" type="number" min="0" max="30"/></td>
+          <td><button class="save-btn" onclick="saveStudent()">Save</button></td>
+        `;
+      } else {
+        head.innerHTML = `<tr><th>S.No</th><th>Student Name</th><th>CCE1 (10)</th><th>CCE2 (5)</th><th>Total (15)</th><th>Actions</th></tr>`;
+        inputRow.innerHTML = `
+          <td><input id="sno" type="number" readonly/></td>
+          <td><input id="studentName"/></td>
+          <td><input id="cce1Marks" type="number" min="0" max="10" oninput="calcTotal()"/></td>
+          <td><input id="cce2Marks" type="number" min="0" max="5" oninput="calcTotal()"/></td>
+          <td><input id="totalMarks" type="number" readonly/></td>
+          <td><button class="save-btn" onclick="saveStudent()">Save</button></td>
+        `;
+      }
+      autoFillSno();
+    }
+
+    function calcTotal() {
+      const cce1 = Number(document.getElementById('cce1Marks').value) || 0;
+      const cce2 = Number(document.getElementById('cce2Marks').value) || 0;
+      document.getElementById('totalMarks').value = cce1 + cce2;
+    }
+
+    function saveStudent() {
+      if (!comboKey) return alert('Select Class, Subject & Faculty!');
+      let s = {
+        sno: Number(document.getElementById('sno').value),
+        name: document.getElementById('studentName').value.trim()
+      };
+      if (isLabCourse) {
+        s.internalMarks = Number(document.getElementById('internalMarks').value) || 0;
+      } else {
+        s.cce1Marks = Number(document.getElementById('cce1Marks').value) || 0;
+        s.cce2Marks = Number(document.getElementById('cce2Marks').value) || 0;
+      }
+      if (!s.name) return alert('Fill all fields!');
+      let index = students.findIndex(st => st.sno === s.sno);
+      index !== -1 ? students[index] = s : students.push(s);
+      localStorage.setItem(comboKey, JSON.stringify(students));
+      clearInputFields();
+      renderTable();
+    }
+
+    function clearInputFields() {
+      autoFillSno();
+      document.getElementById('studentName').value = '';
+      if (isLabCourse) {
+        document.getElementById('internalMarks').value = '';
+      } else {
+        document.getElementById('cce1Marks').value = '';
+        document.getElementById('cce2Marks').value = '';
+        document.getElementById('totalMarks').value = '';
+      }
+    }
+
+    function renderTable() {
+      let tbody = document.getElementById('tableBody');
+      tbody.innerHTML = '';
+      students.forEach((s, i) => {
+        if (isLabCourse) {
+          tbody.innerHTML += `<tr>
+            <td>${s.sno}</td><td>${s.name}</td><td>${s.internalMarks}</td>
+            <td><button class="edit-btn" onclick="editStudent(${i})">Edit</button>
+            <button class="delete-btn" onclick="deleteStudent(${i})">Delete</button></td>
+          </tr>`;
+        } else {
+          let total = s.cce1Marks + s.cce2Marks;
+          tbody.innerHTML += `<tr>
+            <td>${s.sno}</td><td>${s.name}</td><td>${s.cce1Marks}</td><td>${s.cce2Marks}</td><td>${total}</td>
+            <td><button class="edit-btn" onclick="editStudent(${i})">Edit</button>
+            <button class="delete-btn" onclick="deleteStudent(${i})">Delete</button></td>
+          </tr>`;
+        }
+      });
+    }
+
+    function editStudent(i) {
+      let s = students[i];
+      document.getElementById('sno').value = s.sno;
+      document.getElementById('studentName').value = s.name;
+      if (isLabCourse) {
+        document.getElementById('internalMarks').value = s.internalMarks;
+      } else {
+        document.getElementById('cce1Marks').value = s.cce1Marks;
+        document.getElementById('cce2Marks').value = s.cce2Marks;
+        calcTotal();
+      }
+    }
+
+    function deleteStudent(i) {
+      if (confirm('Delete student?')) {
+        students.splice(i, 1);
+        localStorage.setItem(comboKey, JSON.stringify(students));
+        renderTable();
+      }
+    }
+
+    function clearData() {
+      if (!comboKey) return alert('Select Class, Subject & Faculty!');
+      if (confirm('Clear all data for this combination?')) {
+        students = [];
+        localStorage.removeItem(comboKey);
+        renderTable();
+      }
+    }
+
+    function exportToExcel() {
+      if (!comboKey) return alert('Select Class, Subject & Faculty!');
+      const cls = localStorage.getItem('currentClass');
+      const subj = localStorage.getItem('currentSubject');
+      const faculty = localStorage.getItem('currentFaculty');
+      let header = [
+        { A: "Govt. College Rau Indore" },
+        { A: "Department of Botany" },
+        { A: `Faculty Name: ${faculty}` },
+        { A: `Class: ${cls}` },
+        { A: `Subject: ${subj}` },
+        {}
+      ];
+      let data = isLabCourse
+        ? students.map(s => ({ 'S.No': s.sno, 'Student Name': s.name, 'Internal Marks (30)': s.internalMarks }))
+        : students.map(s => ({ 'S.No': s.sno, 'Student Name': s.name, 'CCE1 (10)': s.cce1Marks, 'CCE2 (5)': s.cce2Marks, 'Total (15)': s.cce1Marks + s.cce2Marks }));
+      const ws = XLSX.utils.json_to_sheet([]);
+      XLSX.utils.sheet_add_json(ws, header, { skipHeader: true, origin: "A1" });
+      XLSX.utils.sheet_add_json(ws, data, { origin: -1 });
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'CCE Marks');
+      XLSX.writeFile(wb, `CCE_Marks_${cls}_${subj}_${faculty}.xlsx`);
+    }
+
+    window.onload = () => {
+      const savedClass = localStorage.getItem('currentClass');
+      const savedSubject = localStorage.getItem('currentSubject');
+      const savedFaculty = localStorage.getItem('currentFaculty');
+      if (savedClass && savedSubject && savedFaculty) {
+        comboKey = `students_${savedClass}_${savedSubject}_${savedFaculty}`;
+        students = JSON.parse(localStorage.getItem(comboKey) || '[]');
+        isLabCourse = savedSubject.includes('Lab Course');
+        currentFaculty = savedFaculty || '-';
+        document.getElementById('facultyName').innerText = `Faculty Name: ${currentFaculty}`;
+        document.getElementById('currentCombo').innerText = `Class: ${savedClass} | Subject: ${savedSubject} | Faculty: ${savedFaculty}`;
+        renderInputRow();
+        renderTable();
+      }
+    };
+  </script>
+</body>
+</html>
