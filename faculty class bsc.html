@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CCE Marks Entry</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0; padding: 0;
+      background: #f0f9ff; display: flex; flex-direction: column; min-height: 100vh;
+    }
+    header {
+      background: linear-gradient(45deg, #2c3e50, #3498db);
+      color: #fff; text-align: center; padding: 25px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+    .container {
+      flex: 1; padding: 20px; max-width: 1200px; margin: auto;
+    }
+    h1, h2, h3 { margin: 5px 0; }
+    .selector-btn {
+      background: #27ae60; color: #fff; border: none; padding: 15px 25px; border-radius: 50px;
+      font-size: 18px; display: block; margin: 20px auto; cursor: pointer; width: 50%;
+      transition: all 0.3s ease; box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+    }
+    .selector-btn:hover { background: #2ecc71; }
+    p#currentCombo {
+      text-align: center; font-weight: bold; margin: 15px 0; color: #333; font-size: 18px;
+    }
+    .add-student {
+      display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin: 20px 0;
+    }
+    .add-student button {
+      flex: 1; min-width: 150px; padding: 12px; border: none; border-radius: 30px;
+      cursor: pointer; font-size: 16px; color: #fff; box-shadow: 0 3px 6px rgba(0,0,0,0.15);
+      transition: background 0.3s ease;
+    }
+    .export-excel-btn { background: #3498db; }
+    .export-excel-btn:hover { background: #2980b9; }
+    .clear-data-btn { background: #e74c3c; }
+    .clear-data-btn:hover { background: #c0392b; }
+    table {
+      width: 100%; border-collapse: collapse; background: #fff;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1); border-radius: 8px; overflow: hidden;
+    }
+    th, td {
+      border: 1px solid #ddd; padding: 12px; text-align: center;
+    }
+    th { background: #2c3e50; color: #fff; }
+    input, select {
+      width: 100%; padding: 10px; margin: 5px 0; box-sizing: border-box;
+      border-radius: 4px; border: 1px solid #ccc;
+    }
+    button.save-btn {
+      background: #8e44ad; color: #fff; border: none; border-radius: 4px;
+      padding: 10px; cursor: pointer; width: 100%;
+    }
+    .edit-btn { background: #f39c12; color: #fff; border: none; padding: 6px 12px; border-radius: 4px; }
+    .delete-btn { background: #e74c3c; color: #fff; border: none; padding: 6px 12px; border-radius: 4px; }
+    .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.5); justify-content: center; align-items: center;
+    }
+    .modal-content {
+      background: #fff; padding: 25px; border-radius: 8px; width: 90%; max-width: 400px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    }
+    .modal-content h3 { margin-top: 0; }
+    .modal-content label { display: block; margin-top: 10px; }
+    .modal-content select, .modal-content button {
+      margin-top: 10px; width: 100%; padding: 10px;
+    }
+    footer {
+      background: #34495e; color: #fff; text-align: center; font-size: 16px;
+    }
+    footer marquee {
+      padding: 10px 0; display: block;
+    }
+    @media (max-width: 768px) {
+      th, td { font-size: 14px; padding: 8px; }
+      .add-student { flex-direction: column; }
+      .selector-btn { width: 80%; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Govt. College Rau Indore</h1>
+  <h2>Department of Botany</h2>
+  <h3>CCE Marks Entry</h3>
+</header>
+
+<button class="selector-btn" onclick="openModal()">Select Class, Subject & Faculty</button>
+<p id="currentCombo"></p>
+
+<div class="container">
+  <div class="add-student">
+    <button class="export-excel-btn" onclick="exportToExcel()">Export to Excel</button>
+    <button class="clear-data-btn" onclick="clearData()">Clear Data</button>
+  </div>
+
+  <table>
+    <thead id="tableHead"></thead>
+    <tbody>
+      <tr id="inputRow"></tr>
+      <tbody id="tableBody"></tbody>
+    </tbody>
+  </table>
+</div>
+
+<footer>
+  <marquee behavior="scroll" direction="left">Created by Sandesh Rai</marquee>
+</footer>
+
+<!-- Modal -->
+<div id="selectorModal" class="modal">
+  <div class="modal-content">
+    <h3>Select Class, Subject & Faculty</h3>
+    <label>Class</label>
+    <select id="classSelect">
+      <option>B.Sc I Year</option>
+      <option>B.Sc II Year</option>
+      <option>B.Sc III Year</option>
+    </select>
+    <label>Subject</label>
+    <select id="subjectSelect">
+      <option>Major I</option>
+      <option>Major II</option>
+      <option>Major III</option>
+      <option>Minor I</option>
+      <option>Minor II</option>
+      <option>MDS</option>
+      <option>Practical MJ1</option>
+      <option>Practical MJ2</option>
+      <option>Practical Minor</option>
+    </select>
+    <label>Faculty</label>
+    <select id="facultySelect">
+      <option>Dr. Shweta Hardia</option>
+      <option>Dr. Shweta Tiwari</option>
+      <option>Dr. Ankita Sharma</option>
+      <option>Prof. Tufan Benal</option>
+      <option>Prof. Sandesh Rai</option>
+    </select>
+    <button onclick="saveCombo()">Start</button>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+let students = [];
+let comboKey = '';
+let isPractical = false;
+
+function openModal() {
+  document.getElementById('selectorModal').style.display = 'flex';
+}
+
+function closeModal() {
+  document.getElementById('selectorModal').style.display = 'none';
+}
+
+function saveCombo() {
+  const className = document.getElementById('classSelect').value;
+  const subject = document.getElementById('subjectSelect').value;
+  const faculty = document.getElementById('facultySelect').value;
+
+  comboKey = `students_${className}_${subject}_${faculty.replace(/\s+/g, '_')}`;
+  students = JSON.parse(localStorage.getItem(comboKey) || '[]');
+  isPractical = subject.includes('Practical');
+
+  document.getElementById('currentCombo').innerText =
+    `Class: ${className} | Subject: ${subject} | Faculty: ${faculty}`;
+
+  localStorage.setItem('currentClass', className);
+  localStorage.setItem('currentSubject', subject);
+  localStorage.setItem('currentFaculty', faculty);
+
+  closeModal();
+  renderInputRow();
+  renderTable();
+}
+
+function autoFillSno() {
+  document.getElementById('sno').value = students.length ? Math.max(...students.map(s=>s.sno)) + 1 : 1;
+}
+
+function renderInputRow() {
+  let head = document.getElementById('tableHead');
+  let inputRow = document.getElementById('inputRow');
+
+  if (isPractical) {
+    head.innerHTML = `<tr><th>S.No</th><th>Student Name</th><th>Internal Marks (30)</th><th>Actions</th></tr>`;
+    inputRow.innerHTML = `<td><input id="sno" type="number" readonly/></td>
+      <td><input id="studentName"/></td>
+      <td><input id="internalMarks" type="number" min="0" max="30"/></td>
+      <td><button class="save-btn" onclick="saveStudent()">Save</button></td>`;
+  } else {
+    head.innerHTML = `<tr><th>S.No</th><th>Student Name</th>
+      <th>CCE1</th><th>CCE2</th><th>CCE3</th><th>CCE4</th><th>Total (Best 3)</th><th>Actions</th></tr>`;
+    inputRow.innerHTML = `<td><input id="sno" type="number" readonly/></td>
+      <td><input id="studentName"/></td>
+      <td><select id="cce1Mode"><option>Test</option><option>Assignment</option><option>Project</option></select>
+          <input id="cce1Marks" type="number" min="0" max="10"/></td>
+      <td><select id="cce2Mode"><option>Test</option><option>Assignment</option><option>Project</option></select>
+          <input id="cce2Marks" type="number" min="0" max="10"/></td>
+      <td><select id="cce3Mode"><option>Test</option><option>Assignment</option><option>Project</option></select>
+          <input id="cce3Marks" type="number" min="0" max="10"/></td>
+      <td><select id="cce4Mode"><option>Test</option><option>Assignment</option><option>Project</option></select>
+          <input id="cce4Marks" type="number" min="0" max="10"/></td>
+      <td><button class="save-btn" onclick="saveStudent()">Save</button></td>`;
+  }
+  autoFillSno();
+}
+
+function renderTable() {
+  let tbody = document.getElementById('tableBody');
+  tbody.innerHTML = '';
+  students.forEach((s,i) => {
+    if (isPractical) {
+      tbody.innerHTML += `<tr>
+        <td>${s.sno}</td><td>${s.name}</td><td>${s.internalMarks}/30</td>
+        <td><button class="edit-btn" onclick="editStudent(${i})">Edit</button>
+        <button class="delete-btn" onclick="deleteStudent(${i})">Delete</button></td></tr>`;
+    } else {
+      let total = [s.cce1Marks, s.cce2Marks, s.cce3Marks, s.cce4Marks].sort((a,b)=>b-a).slice(0,3).reduce((a,b)=>a+b,0);
+      tbody.innerHTML += `<tr>
+        <td>${s.sno}</td><td>${s.name}</td>
+        <td>${s.cce1Mode}: ${s.cce1Marks}</td><td>${s.cce2Mode}: ${s.cce2Marks}</td>
+        <td>${s.cce3Mode}: ${s.cce3Marks}</td><td>${s.cce4Mode}: ${s.cce4Marks}</td>
+        <td>${total}/30</td>
+        <td><button class="edit-btn" onclick="editStudent(${i})">Edit</button>
+        <button class="delete-btn" onclick="deleteStudent(${i})">Delete</button></td></tr>`;
+    }
+  });
+}
+
+function saveStudent() {
+  if (!comboKey) return alert('Select Class, Subject & Faculty!');
+  let s = { sno: Number(document.getElementById('sno').value), name: document.getElementById('studentName').value.trim() };
+  if (isPractical) { s.internalMarks = Number(document.getElementById('internalMarks').value)||0; }
+  else {
+    s.cce1Mode = document.getElementById('cce1Mode').value; s.cce1Marks = Number(document.getElementById('cce1Marks').value)||0;
+    s.cce2Mode = document.getElementById('cce2Mode').value; s.cce2Marks = Number(document.getElementById('cce2Marks').value)||0;
+    s.cce3Mode = document.getElementById('cce3Mode').value; s.cce3Marks = Number(document.getElementById('cce3Marks').value)||0;
+    s.cce4Mode = document.getElementById('cce4Mode').value; s.cce4Marks = Number(document.getElementById('cce4Marks').value)||0;
+  }
+  if (!s.name) return alert('Fill all fields!');
+  let index = students.findIndex(st => st.sno === s.sno);
+  index !== -1 ? students[index]=s : students.push(s);
+  localStorage.setItem(comboKey, JSON.stringify(students));
+  clearInputFields(); renderTable();
+}
+
+function clearInputFields() {
+  autoFillSno(); document.getElementById('studentName').value='';
+  if (isPractical) document.getElementById('internalMarks').value='';
+  else ['cce1Marks','cce2Marks','cce3Marks','cce4Marks'].forEach(id=>document.getElementById(id).value='');
+}
+
+function editStudent(i) {
+  let s=students[i]; document.getElementById('sno').value=s.sno; document.getElementById('studentName').value=s.name;
+  if (isPractical) document.getElementById('internalMarks').value=s.internalMarks;
+  else {
+    document.getElementById('cce1Mode').value=s.cce1Mode; document.getElementById('cce1Marks').value=s.cce1Marks;
+    document.getElementById('cce2Mode').value=s.cce2Mode; document.getElementById('cce2Marks').value=s.cce2Marks;
+    document.getElementById('cce3Mode').value=s.cce3Mode; document.getElementById('cce3Marks').value=s.cce3Marks;
+    document.getElementById('cce4Mode').value=s.cce4Mode; document.getElementById('cce4Marks').value=s.cce4Marks;
+  }
+}
+
+function deleteStudent(i) {
+  if (confirm('Delete student?')) { students.splice(i,1); localStorage.setItem(comboKey, JSON.stringify(students)); renderTable(); }
+}
+
+function clearData() {
+  if (!comboKey) return alert('Select Class, Subject & Faculty!');
+  if (confirm('Clear all data for this selection?')) { students=[]; localStorage.removeItem(comboKey); renderTable(); }
+}
+
+function exportToExcel() {
+  if (!comboKey) return alert('Select Class, Subject & Faculty!');
+  const className = localStorage.getItem('currentClass');
+  const subject = localStorage.getItem('currentSubject');
+  const faculty = localStorage.getItem('currentFaculty');
+  let header = [
+    { A: "Govt. College Rau Indore" },
+    { A: "Department of Botany" },
+    { A: `Class: ${className}` },
+    { A: `Subject: ${subject}` },
+    { A: `Faculty: ${faculty}` },
+    {}
+  ];
+  let data = isPractical
+    ? students.map(s => ({
+      'S.No': s.sno,
+      'Student Name': s.name,
+      'Internal Marks': `${s.internalMarks}/30`
+    }))
+    : students.map(s => {
+      const total = [s.cce1Marks, s.cce2Marks, s.cce3Marks, s.cce4Marks]
+        .sort((a, b) => b - a).slice(0, 3).reduce((a, b) => a + b, 0);
+      return {
+        'S.No': s.sno,
+        'Student Name': s.name,
+        'CCE1': `${s.cce1Mode}: ${s.cce1Marks}`,
+        'CCE2': `${s.cce2Mode}: ${s.cce2Marks}`,
+        'CCE3': `${s.cce3Mode}: ${s.cce3Marks}`,
+        'CCE4': `${s.cce4Mode}: ${s.cce4Marks}`,
+        'Total(Best3/30)': total
+      };
+    });
+
+  const ws = XLSX.utils.json_to_sheet([]);
+  XLSX.utils.sheet_add_json(ws, header, { skipHeader: true, origin: "A1" });
+  XLSX.utils.sheet_add_json(ws, data, { origin: -1 });
+
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'CCE Marks');
+
+  XLSX.writeFile(wb, `CCE_Marks_${className}_${subject}_${faculty}.xlsx`);
+}
+
+window.onload = () => {
+  const savedClass = localStorage.getItem('currentClass');
+  const savedSubject = localStorage.getItem('currentSubject');
+  const savedFaculty = localStorage.getItem('currentFaculty');
+
+  if (savedClass && savedSubject && savedFaculty) {
+    comboKey = `students_${savedClass}_${savedSubject}_${savedFaculty.replace(/\s+/g, '_')}`;
+    students = JSON.parse(localStorage.getItem(comboKey) || '[]');
+    isPractical = savedSubject.includes('Practical');
+
+    document.getElementById('currentCombo').innerText =
+      `Class: ${savedClass} | Subject: ${savedSubject} | Faculty: ${savedFaculty}`;
+
+    renderInputRow();
+    renderTable();
+  }
+};
+</script>
+</body>
+</html>
